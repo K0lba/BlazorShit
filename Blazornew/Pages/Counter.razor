@@ -93,20 +93,20 @@
     public Movie searchedMovie;
     public string FilmId;
     public List<Actor> searchedActors;
-    //  public List<Director> searchedDirectors;
     public string Image;
     public string PersonImage;
     public string description;
     public List<Movie> searchedMovies;
     public bool isHasDescription = false;
 
-    public async void GetOneFilm()
+    public async Task GetOneFilm()
     {
         searchedMovie = Service.GetMovieFromTitle(ValueSearch); //по названию этот метод достает один фильм
         if (searchedMovie == null)
         {
             Image = "https://wonder-day.com/wp-content/uploads/2020/10/wonder-day-among-us-png-29.png";
             ValueSearch = "NOTHING";
+            description = string.Empty;
             return;
         }
         if (searchedMovie.Title == currentFilmTitle) return;
@@ -115,7 +115,6 @@
         await GetImage(searchedMovie);
         await GetDescription(searchedMovie);
         searchedActors = searchedMovie.Actors.ToList();
-        // searchedDirectors = searchedMovie.Directors.ToList();
         currentFilmTitle = searchedMovie.Title;
     }
 
@@ -212,23 +211,18 @@
         description = String.Empty;
         searchedMovie = Service.GetMovieFromTitle(Name);
         searchedActors = searchedMovie.Actors.ToList();
-        // searchedDirectors = searchedMovie.Directors.ToList();
         await GetImage(searchedMovie);
         await GetDescription(searchedMovie);
     }
 
-    public void GetMovieFromTag(string tagName)
+    public async Task GetMovieFromTag(string tagName)
     {
-        description = "";
+        description = string.Empty;
         FilmOnDisplay = false;
         searchedMovies = Service.GetMoviesFromTag(tagName);
     }
 
-    // public async Task GetMovieFromDirector(string directorFullname)
-    // {
-    //     isDisplayedInfoAboutFilm = false;
-    //     searchedMovies = Service.GetMoviesFromDirector(directorFullname);
-    // }
+
     public async Task GetMovieFromActor(string actorFullname)
     {
         var client = new HttpClient();
@@ -254,8 +248,7 @@
                 Image = body.Substring(startIndex, (endIndex - startIndex) - 3);
             }
         }
-        description = "";
-        //  await GetDescription();
+        description = string.Empty;
         FilmOnDisplay = false;
         searchedMovies = Service.GetMoviesFromActor(actorFullname);
 

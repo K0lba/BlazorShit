@@ -1,6 +1,5 @@
 ﻿@page "/actors"
 @using Blazornew.Data
-@inject WeatherForecastService ForecastService
 @using Blazornew.Services
 @inherits OwningComponentBase<MovieService>
 
@@ -10,7 +9,7 @@
 
 <div class="input-group">
     <input type="text" class="form-control rounded" placeholder="Search" aria-label="Search"
-           aria-describedby="search-addon" @bind="ValueSearch"/>
+           aria-describedby="search-addon" @bind="ValueSearch" />
     <button @onclick="() => GetMetod()" type="button" class="btn btn-outline-primary">Search</button>
 </div>
 @ValueSearch
@@ -20,24 +19,50 @@
         <div style="margin-bottom: 40px" class="col col-lg-4">
             <div class="card h-100">
                 <img src="@Image"
-             class="card-img-top"
-             style="object-fit:contain; height: 250px">
+                 class="card-img-top"
+                 style="object-fit:contain; height: 250px">
             </div>
         </div>
     }
 
-@if (searchedMovies != null)
-                         {
-                             @foreach (var film in searchedMovies)
-                             {
-                                 <div>
-                                     <a @onclick="() => GetMoviesAsync(film.Title)">@film.Title</a>
-                                 </div>
-                             }
-                         }
+    @if (searchedMovies != null)
+    {
+        @foreach (var film in searchedMovies)
+        {
+            <div style="margin-bottom: 40px" class="col col-lg-4">
+                <div class="card h-100">
+                    <div type="div" class="card-body">
+                        <a @onclick="() => GetMoviesAsync(film.Title)">@film.Title</a>
+                    </div>
+                </div>
+            </div>
+        }
 
+    }
+    else if (!FilmOnDisplay)
+    {
+        <div type="div" class="card-body">
+            <p type="textP" class="card-text" align="left">
+                <div class="card h-100">
+
+                Name: @searchedMovie.Title
+                Rating: @searchedMovie.Rating <br>
+                <br>
+                Actors:
+                @if (searchedMovie.Actors != null)
+                {
+                    @foreach (var actor in searchedMovie.Actors)
+                    {
+                        <div>
+                            <a @onclick="() => GetMovieFromActor(actor.Name)">@actor.Name</a>
+                        </div>
+                    }
+                }
+                </div>
+            </p>
+        </div>
+    }
 </div>
-
 
 @code {
     public bool FilmOnDisplay = true;
@@ -70,7 +95,7 @@
         searchedActors = searchedMovie.Actors.ToList();
         currentFilmTitle = searchedMovie.Title;
     }
-    
+
     public async void GetOneFilm()
     {
         searchedMovie = Service.GetMovieFromTitle(ValueSearch); //по названию этот метод достает один фильм
@@ -93,17 +118,19 @@
     {
         var client = new HttpClient();
         var titleName = movie?.Title.Replace(" ", "%20");
+
         var request = new HttpRequestMessage
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri("https://imdb8.p.rapidapi.com/auto-complete?q=" + titleName),
-            Headers =
             {
-                { "X-RapidAPI-Key", "9e6356c61dmsh8d31febb28d652ep1c16a2jsna4867c67859d" },
-                { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
-            },
-        };
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + titleName),
+                Headers =
+    {
+    { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
+    { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+    },
+            };
         await GI(request, client);
+        await GetDescription(searchedMovie);
     }
 
     public async Task GetImage(Actor Actor)
@@ -116,8 +143,8 @@
                 RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/actors/get-all-images?nconst=" + ActorName),
                 Headers =
     {
-        { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
-        { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+    { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
+    { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
     },
             };
         await GI(request, client);
@@ -128,22 +155,25 @@
         isHasDescription = true;
         var client = new HttpClient();
         var request = new HttpRequestMessage
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri("https://imdb8.p.rapidapi.com/title/get-synopses?tconst=" + FilmId),
-            Headers =
             {
-                { "X-RapidAPI-Key", "9e6356c61dmsh8d31febb28d652ep1c16a2jsna4867c67859d" },
-                { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
-            },
-        };
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/title/get-plots?tconst=" + FilmId),
+                Headers =
+    {
+    { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
+    { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+    },
+            };
         using (var response = await client.SendAsync(request))
         {
             response.EnsureSuccessStatusCode();
             var responseString = await response.Content.ReadAsStringAsync();
             try
             {
-                description = responseString.Substring(responseString.IndexOf("text") + 9);
+                var des = "";
+                des = responseString.Substring(responseString.IndexOf("text") + 7);
+                description = des.Substring(0, des.IndexOf(".") + 1);
+
             }
             catch
             {
@@ -173,7 +203,9 @@
 
     public async Task GetMoviesAsync(string Name)
     {
-        ValueSearch = Name;
+        //ValueSearch = Name;
+        searchedMovies = null;
+        FilmOnDisplay = false;
         description = String.Empty;
         searchedMovie = Service.GetMovieFromTitle(Name);
         searchedActors = searchedMovie.Actors.ToList();
@@ -189,13 +221,14 @@
 
     public async Task GetMetod()
     {
+        FilmOnDisplay = true;
         await GetMovieFromActor(ValueSearch);
     }
     public async Task GetMovieFromActor(string actorFullname)
     {
-         string please = actorFullname.Replace(" ", "%20");
-    // var client = new HttpClient();
-      //  var client = new HttpClient();
+        string please = actorFullname.Replace(" ", "%20");
+        // var client = new HttpClient();
+        //  var client = new HttpClient();
         // var request = new HttpRequestMessage
         // {
         //     Method = HttpMethod.Get,
@@ -206,7 +239,7 @@
         //         { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
         //     },
         // };
-        
+
         // using (var response = await client.SendAsync(request))
         // {
         //     if (response.IsSuccessStatusCode)
@@ -226,8 +259,8 @@
                 RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + actorFullname.Replace(" ", "%20")),
                 Headers =
     {
-        { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
-        { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+    { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
+    { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
     },
             };
         using (var response = await client.SendAsync(request))
@@ -243,10 +276,10 @@
             }
         }
         DidImage = "https://www.meme-arsenal.com/memes/6d455cb24086d8586d455b3f6f4de840.jpg";
-    //  await GetDescription();
-      //  FilmOnDisplay = false;
+        //  await GetDescription();
+        //  FilmOnDisplay = false;
         searchedMovies = Service.GetMoviesFromActor2(actorFullname);
-
+        FilmOnDisplay = true;
     }
 
     public void ActivateGetInfo(string movieTitle)
@@ -255,4 +288,4 @@
         ValueSearch = movieTitle;
         GetOneFilm();
     }
-}
+    }
