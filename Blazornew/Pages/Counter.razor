@@ -27,7 +27,7 @@
 
                 <div type="div" class="card-body">
                     <p type="textP" class="card-text" align="left">
-                        Name: @searchedMovie.Name
+                        Name: @searchedMovie.Title
                         Rating: @searchedMovie.Rating <br>
                         <br>
                         Actors:
@@ -60,7 +60,7 @@
                 <div style="margin-bottom: 40px" class="col col-lg-4">
                     <div class="card h-100">
                         <div type="div" class="card-body">
-                            <a @onclick="() => GetMoviesAsync(film.Name)">@film.Name</a>
+                            <a @onclick="() => GetMoviesAsync(film.Title)">@film.Title</a>
                         </div>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
                 @foreach (var film in searchedMovies)
                 {
                     <div>
-                        <a @onclick="() => ActivateGetInfo(film.Name)">@film.Name</a>
+                        <a @onclick="() => ActivateGetInfo(film.Title)">@film.Title</a>
                     </div>
                 }
             </div>
@@ -109,20 +109,20 @@
             ValueSearch = "NOTHING";
             return;
         }
-        if (searchedMovie.Name == currentFilmTitle) return;
+        if (searchedMovie.Title == currentFilmTitle) return;
 
         
         await GetImage(searchedMovie);
         await GetDescription(searchedMovie);
         searchedActors = searchedMovie.Actors.ToList();
     // searchedDirectors = searchedMovie.Directors.ToList();
-        currentFilmTitle = searchedMovie.Name;
+        currentFilmTitle = searchedMovie.Title;
     }
 
     public async Task GetImage(Movie movie)
     {
         var client = new HttpClient();
-        var titleName = movie?.Name.Replace(" ", "%20");
+        var titleName = movie?.Title.Replace(" ", "%20");
         var request = new HttpRequestMessage
         {
             Method = HttpMethod.Get,

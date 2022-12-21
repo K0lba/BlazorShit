@@ -1,12 +1,13 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 
 namespace Blazornew.Data;
 
-
-    public class Movie
+[Table("Movie")]
+public class Movie
     {
         public int Id { get; set; }
-        public string? Name { get; set; }
+        public string? Title { get; set; }
         public HashSet<Actor>? Actors { get; set; }
         public HashSet<Tag>? Tags { get; set; }
 
@@ -19,7 +20,7 @@ namespace Blazornew.Data;
 
         public Movie(string name, HashSet<Actor> actors, HashSet<Tag> tags, string rating)
         {
-            Name = name;
+            Title = name;
             Actors = actors;
             Tags = tags;
             Rating = rating;
@@ -87,9 +88,9 @@ namespace Blazornew.Data;
         //     Console.WriteLine(Top10s.topfilms);
         // }
 
-        public Movie(string name)
+        public Movie(string title)
         {
-            Name = name;
+            Title = title;
         }
     }
 

@@ -15,7 +15,7 @@ namespace Blazornew.Services
             var movie = _dbContext.Movies
                 .Include(m => m.Actors)
                 .Include(m => m.Tags)
-                .Where(m => m.Name.ToLower() == inputValue.ToLower()).FirstOrDefault();
+                .Where(m => m.Title.ToLower() == inputValue.ToLower()).FirstOrDefault();
             return movie;
         }
         public Actor GetActorFromTitle(string inputValue)

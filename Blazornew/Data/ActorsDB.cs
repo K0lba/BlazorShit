@@ -12,7 +12,7 @@ public class Actor
     {
         foreach (var item in Movies)
         {
-            Console.WriteLine(item.Name);
+            Console.WriteLine(item.Title);
         }
     }
 
