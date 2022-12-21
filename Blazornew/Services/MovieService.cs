@@ -34,5 +34,11 @@ namespace Blazornew.Services
             return dbContext.Movies.Include(m => m.Actors)
                .Where(m => m.Actors.Any(n => n.Name.ToLower() == inputValue.ToLower())).ToList();
         }
+        public List<Movie> GetMoviesFromActor2(string inputValue)
+        {
+            //return dbContext.ActorsDBs.Include(a => a.movie).Where(a => a.name.ToLower() == inputValue.ToLower()).First().movie.ToList();
+            return dbContext.Movies.Include(m => m.Actors)
+                .Where(m => m.Actors.Any(n => n.Name.ToLower().Contains(inputValue.ToLower()))).ToList();
+        }
     }
 }

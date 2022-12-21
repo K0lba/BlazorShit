@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Blazornew.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Connecton")));
+builder.Services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Connection")));
 //builder.Services.AddRazorPages();
 // Add services to the container.
 builder.Services.AddRazorPages();

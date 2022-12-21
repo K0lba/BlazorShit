@@ -78,7 +78,7 @@
                 @foreach (var film in searchedMovies)
                 {
                     <div>
-                        <a @onclick="() => ActivateGetInfo(film.Title)">@film.Title</a>
+                        <a @onclick="() =>  ActivateGetInfo(film.Title)">@film.Title</a>
                     </div>
                 }
             </div>
@@ -124,7 +124,7 @@
         var client = new HttpClient();
         var titleName = movie?.Title.Replace(" ", "%20");
 
-var request = new HttpRequestMessage
+        var request = new HttpRequestMessage
 {
 	Method = HttpMethod.Get,
                 RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + titleName),
@@ -135,6 +135,7 @@ var request = new HttpRequestMessage
 	},
 };
         await GI(request, client);
+        await GetDescription(searchedMovie);
     }
 
     public async Task GetImage(Actor Actor)
@@ -144,7 +145,7 @@ var request = new HttpRequestMessage
         var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + ActorName),
+                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/actors/get-all-images?nconst=" + ActorName),
                 Headers =
     {
         { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
@@ -161,7 +162,7 @@ var request = new HttpRequestMessage
         var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + FilmId),
+                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/title/get-plots?tconst=" + FilmId),
                 Headers =
     {
         { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
@@ -174,7 +175,10 @@ var request = new HttpRequestMessage
             var responseString = await response.Content.ReadAsStringAsync();
             try
             {
-                description = responseString.Substring(responseString.IndexOf("text") + 9);
+                var des = "";
+                des = responseString.Substring(responseString.IndexOf("text") + 7);
+                description =des.Substring(0, des.IndexOf(".")+1);
+
             }
             catch
             {
@@ -215,6 +219,7 @@ var request = new HttpRequestMessage
 
     public void GetMovieFromTag(string tagName)
     {
+        description = "";
         FilmOnDisplay = false;
         searchedMovies = Service.GetMoviesFromTag(tagName);
     }
@@ -249,14 +254,14 @@ var request = new HttpRequestMessage
                 Image = body.Substring(startIndex, (endIndex - startIndex) - 3);
             }
         }
-
+        description = "";
         //  await GetDescription();
         FilmOnDisplay = false;
         searchedMovies = Service.GetMoviesFromActor(actorFullname);
 
     }
 
-    public void ActivateGetInfo(string movieTitle)
+    public async Task ActivateGetInfo(string movieTitle)
     {
         FilmOnDisplay = true;
         ValueSearch = movieTitle;

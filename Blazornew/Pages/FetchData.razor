@@ -1,50 +1,258 @@
-﻿@page "/fetchdata"
+﻿@page "/actors"
 @using Blazornew.Data
 @inject WeatherForecastService ForecastService
+@using Blazornew.Services
+@inherits OwningComponentBase<MovieService>
 
-<PageTitle>Weather forecast</PageTitle>
+<PageTitle>Actors</PageTitle>
 
-<h1>Weather forecast</h1>
+<h1>Актер</h1>
 
-<p>This component demonstrates fetching data from a service.</p>
-
-@if (forecasts == null)
-{
-    <p>
-        <em>Loading...</em>
-    </p>
-}
-else
-{
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Date</th>
-            <th>Temp. (C)</th>
-            <th>Temp. (F)</th>
-            <th>Summary</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var forecast in forecasts)
-        {
-            <tr>
-                <td>@forecast.Date.ToShortDateString()</td>
-                <td>@forecast.TemperatureC</td>
-                <td>@forecast.TemperatureF</td>
-                <td>@forecast.Summary</td>
-            </tr>
-        }
-        </tbody>
-    </table>
-}
-
-@code {
-    private WeatherForecast[]? forecasts;
-
-    protected override async Task OnInitializedAsync()
+<div class="input-group">
+    <input type="text" class="form-control rounded" placeholder="Search" aria-label="Search"
+           aria-describedby="search-addon" @bind="ValueSearch"/>
+    <button @onclick="() => GetMetod()" type="button" class="btn btn-outline-primary">Search</button>
+</div>
+@ValueSearch
+<div align="center" class="container">
+    @if (ValueSearch != null)
     {
-        forecasts = await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now));
+        <div style="margin-bottom: 40px" class="col col-lg-4">
+            <div class="card h-100">
+                <img src="@Image"
+             class="card-img-top"
+             style="object-fit:contain; height: 250px">
+            </div>
+        </div>
     }
 
+@if (searchedMovies != null)
+                         {
+                             @foreach (var film in searchedMovies)
+                             {
+                                 <div>
+                                     <a @onclick="() => GetMoviesAsync(film.Title)">@film.Title</a>
+                                 </div>
+                             }
+                         }
+
+</div>
+
+
+@code {
+    public bool FilmOnDisplay = true;
+    public string currentFilmTitle;
+    public string ValueSearch;
+    public Movie searchedMovie;
+    public string FilmId;
+    public List<Actor> searchedActors;
+    public string Image;
+    public string DidImage;
+    public string PersonImage;
+    public string description;
+    public List<Movie> searchedMovies;
+    public bool isHasDescription = false;
+
+    public async void GetOneActorFilm()
+    {
+        searchedMovie = Service.GetMovieFromTitle(ValueSearch); //по названию этот метод достает один фильм
+        if (searchedMovie == null)
+        {
+            Image = "https://wonder-day.com/wp-content/uploads/2020/10/wonder-day-among-us-png-29.png";
+            ValueSearch = "NOTHING";
+            return;
+        }
+        if (searchedMovie.Title == currentFilmTitle) return;
+
+
+        await GetImage(searchedMovie);
+        await GetDescription(searchedMovie);
+        searchedActors = searchedMovie.Actors.ToList();
+        currentFilmTitle = searchedMovie.Title;
+    }
+    
+    public async void GetOneFilm()
+    {
+        searchedMovie = Service.GetMovieFromTitle(ValueSearch); //по названию этот метод достает один фильм
+        if (searchedMovie == null)
+        {
+            Image = "https://wonder-day.com/wp-content/uploads/2020/10/wonder-day-among-us-png-29.png";
+            ValueSearch = "NOTHING";
+            return;
+        }
+        if (searchedMovie.Title == currentFilmTitle) return;
+
+
+        await GetImage(searchedMovie);
+        await GetDescription(searchedMovie);
+        searchedActors = searchedMovie.Actors.ToList();
+        currentFilmTitle = searchedMovie.Title;
+    }
+
+    public async Task GetImage(Movie movie)
+    {
+        var client = new HttpClient();
+        var titleName = movie?.Title.Replace(" ", "%20");
+        var request = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri("https://imdb8.p.rapidapi.com/auto-complete?q=" + titleName),
+            Headers =
+            {
+                { "X-RapidAPI-Key", "9e6356c61dmsh8d31febb28d652ep1c16a2jsna4867c67859d" },
+                { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
+            },
+        };
+        await GI(request, client);
+    }
+
+    public async Task GetImage(Actor Actor)
+    {
+        var client = new HttpClient();
+        var ActorName = Actor?.Name.Replace(" ", "%20");
+        var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/actors/get-all-images?nconst=" + ActorName),
+                Headers =
+    {
+        { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
+        { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+    },
+            };
+        await GI(request, client);
+    }
+
+    public async Task GetDescription(Movie movie)
+    {
+        isHasDescription = true;
+        var client = new HttpClient();
+        var request = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri("https://imdb8.p.rapidapi.com/title/get-synopses?tconst=" + FilmId),
+            Headers =
+            {
+                { "X-RapidAPI-Key", "9e6356c61dmsh8d31febb28d652ep1c16a2jsna4867c67859d" },
+                { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
+            },
+        };
+        using (var response = await client.SendAsync(request))
+        {
+            response.EnsureSuccessStatusCode();
+            var responseString = await response.Content.ReadAsStringAsync();
+            try
+            {
+                description = responseString.Substring(responseString.IndexOf("text") + 9);
+            }
+            catch
+            {
+                description = "описания фильма нет";
+            }
+        }
+    }
+
+    public async Task GI(HttpRequestMessage request, HttpClient client)
+    {
+        using (var response = client.Send(request))
+        {
+            var responseString2 = await response.Content.ReadAsStringAsync();
+            try
+            {
+                int startIndex = responseString2.IndexOf("https");
+                int endIndex = responseString2.IndexOf("width", startIndex);
+                Image = responseString2.Substring(startIndex, (endIndex - startIndex) - 3);
+                FilmId = responseString2.Substring(responseString2.IndexOf("id\":\"") + 5, 9);
+            }
+            catch
+            {
+
+            }
+        }
+    }
+
+    public async Task GetMoviesAsync(string Name)
+    {
+        ValueSearch = Name;
+        description = String.Empty;
+        searchedMovie = Service.GetMovieFromTitle(Name);
+        searchedActors = searchedMovie.Actors.ToList();
+        await GetImage(searchedMovie);
+        await GetDescription(searchedMovie);
+    }
+
+    public void GetMovieFromTag(string tagName)
+    {
+        FilmOnDisplay = false;
+        searchedMovies = Service.GetMoviesFromTag(tagName);
+    }
+
+    public async Task GetMetod()
+    {
+        await GetMovieFromActor(ValueSearch);
+    }
+    public async Task GetMovieFromActor(string actorFullname)
+    {
+         string please = actorFullname.Replace(" ", "%20");
+    // var client = new HttpClient();
+      //  var client = new HttpClient();
+        // var request = new HttpRequestMessage
+        // {
+        //     Method = HttpMethod.Get,
+        //     RequestUri = new Uri("https://imdb8.p.rapidapi.com/auto-complete?q=game%20of%20thr"),
+        //     Headers =
+        //     {
+        //         { "X-RapidAPI-Key", "ba3438375bmsh57a48239c20e4e8p1b25f8jsn1e7a731b663f" },
+        //         { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
+        //     },
+        // };
+        
+        // using (var response = await client.SendAsync(request))
+        // {
+        //     if (response.IsSuccessStatusCode)
+        //     {
+        //         response.EnsureSuccessStatusCode();
+        //         var body = await response.Content.ReadAsStringAsync();
+        //         var actorId = body.Substring(body.IndexOf("nm"), 9);
+        //         int startIndex = body.IndexOf("https");
+        //         int endIndex = body.IndexOf("width", startIndex);
+        //         Image = body.Substring(startIndex, (endIndex - startIndex) - 3);
+        //     }
+        // }
+        var client = new HttpClient();
+        var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + actorFullname.Replace(" ", "%20")),
+                Headers =
+    {
+        { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
+        { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+    },
+            };
+        using (var response = await client.SendAsync(request))
+        {
+            if (response.IsSuccessStatusCode)
+            {
+                response.EnsureSuccessStatusCode();
+                var body = await response.Content.ReadAsStringAsync();
+                var actorId = body.Substring(body.IndexOf("nm"), 9);
+                int startIndex = body.IndexOf("https");
+                int endIndex = body.IndexOf("width", startIndex);
+                Image = body.Substring(startIndex, (endIndex - startIndex) - 3);
+            }
+        }
+        DidImage = "https://www.meme-arsenal.com/memes/6d455cb24086d8586d455b3f6f4de840.jpg";
+    //  await GetDescription();
+      //  FilmOnDisplay = false;
+        searchedMovies = Service.GetMoviesFromActor2(actorFullname);
+
+    }
+
+    public void ActivateGetInfo(string movieTitle)
+    {
+        FilmOnDisplay = true;
+        ValueSearch = movieTitle;
+        GetOneFilm();
+    }
 }
