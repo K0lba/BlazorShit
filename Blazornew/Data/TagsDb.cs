@@ -3,26 +3,12 @@ namespace Blazornew.Data;
 public class Tag
 {
     public int Id { get; set; }
-    public string? Name { get; set; }
-    public HashSet<Movie>? Movies { get; set; }
+    public string? Title { get; set; }
 
-
-    public override int GetHashCode()
+    public Tag(string title)
     {
-        return  Name.GetHashCode();
+        Title = title;
     }
 
-    public override bool Equals(object? obj)
-    {
-        var other = obj as Tag;
-        return other != null && other.Name == this.Name;
-    }
-
-    public void writefilms()
-    {
-        foreach (var item in Movies)
-        {
-            Console.WriteLine(item.Title);
-        }
-    }
+    public HashSet<Movie> Movies { get; set; }
 }

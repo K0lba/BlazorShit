@@ -24,7 +24,7 @@ public class ApplicationContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.Entity<Movie>().HasMany(m => m.top10)
+        modelBuilder.Entity<Movie>().HasMany(m => m.Tops)
             .WithMany();
     }
 }

@@ -10,7 +10,7 @@
 
 <div class="input-group">
     <input type="text" class="form-control rounded" placeholder="Search" aria-label="Search"
-           aria-describedby="search-addon" @bind="ValueSearch"/>
+           aria-describedby="search-addon" @bind="ValueSearch" />
     <button @onclick="() => GetOneFilm()" type="button" class="btn btn-outline-primary">Search</button>
 </div>
 @ValueSearch
@@ -22,8 +22,8 @@
         <div style="margin-bottom: 40px" class="col col-lg-4">
             <div class="card h-100">
                 <img src="@Image"
-                     class="card-img-top"
-                     style="object-fit:contain; height: 250px">
+                 class="card-img-top"
+                 style="object-fit:contain; height: 250px">
 
                 <div type="div" class="card-body">
                     <p type="textP" class="card-text" align="left">
@@ -46,7 +46,7 @@
                             @foreach (var tag in searchedMovie.Tags)
                             {
                                 <div>
-                                    <a @onclick="() => GetMovieFromTag(tag.Name)">@tag.Name</a>
+                                    <a @onclick="() => GetMovieFromTag(tag.Title)">@tag.Title</a>
                                 </div>
                             }
                         }
@@ -55,7 +55,7 @@
             </div>
         </div>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-            @foreach (var film in searchedMovie.top10)
+            @foreach (var film in searchedMovie.Tops)
             {
                 <div style="margin-bottom: 40px" class="col col-lg-4">
                     <div class="card h-100">
@@ -72,8 +72,8 @@
         <div style="margin-bottom: 40px" class="col col-lg-4">
             <div class="card h-100">
                 <img src="@Image"
-                     class="card-img-top"
-                     style="object-fit:contain; height: 250px">
+                 class="card-img-top"
+                 style="object-fit:contain; height: 250px">
 
                 @foreach (var film in searchedMovies)
                 {
@@ -111,11 +111,11 @@
         }
         if (searchedMovie.Title == currentFilmTitle) return;
 
-        
+
         await GetImage(searchedMovie);
         await GetDescription(searchedMovie);
         searchedActors = searchedMovie.Actors.ToList();
-    // searchedDirectors = searchedMovie.Directors.ToList();
+        // searchedDirectors = searchedMovie.Directors.ToList();
         currentFilmTitle = searchedMovie.Title;
     }
 
@@ -123,33 +123,34 @@
     {
         var client = new HttpClient();
         var titleName = movie?.Title.Replace(" ", "%20");
-        var request = new HttpRequestMessage
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri("https://imdb8.p.rapidapi.com/auto-complete?q=" + titleName),
-            Headers =
-            {
-                { "X-RapidAPI-Key", "9e6356c61dmsh8d31febb28d652ep1c16a2jsna4867c67859d" },
-                { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
-            },
-        };
+
+var request = new HttpRequestMessage
+{
+	Method = HttpMethod.Get,
+                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + titleName),
+                Headers =
+	{
+		{ "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
+		{ "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+	},
+};
         await GI(request, client);
     }
-    
+
     public async Task GetImage(Actor Actor)
     {
         var client = new HttpClient();
         var ActorName = Actor?.Name.Replace(" ", "%20");
         var request = new HttpRequestMessage
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri("https://imdb8.p.rapidapi.com/auto-complete?q=" + ActorName),
-            Headers =
             {
-                { "X-RapidAPI-Key", "9e6356c61dmsh8d31febb28d652ep1c16a2jsna4867c67859d" },
-                { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
-            },
-        };
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + ActorName),
+                Headers =
+    {
+        { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
+        { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+    },
+            };
         await GI(request, client);
     }
 
@@ -158,15 +159,15 @@
         isHasDescription = true;
         var client = new HttpClient();
         var request = new HttpRequestMessage
-        {
-            Method = HttpMethod.Get,
-            RequestUri = new Uri("https://imdb8.p.rapidapi.com/title/get-synopses?tconst=" + FilmId),
-            Headers =
             {
-                { "X-RapidAPI-Key", "9e6356c61dmsh8d31febb28d652ep1c16a2jsna4867c67859d" },
-                { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
-            },
-        };
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + FilmId),
+                Headers =
+    {
+        { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
+        { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+    },
+            };
         using (var response = await client.SendAsync(request))
         {
             response.EnsureSuccessStatusCode();
@@ -207,7 +208,7 @@
         description = String.Empty;
         searchedMovie = Service.GetMovieFromTitle(Name);
         searchedActors = searchedMovie.Actors.ToList();
-    // searchedDirectors = searchedMovie.Directors.ToList();
+        // searchedDirectors = searchedMovie.Directors.ToList();
         await GetImage(searchedMovie);
         await GetDescription(searchedMovie);
     }
@@ -227,16 +228,15 @@
     {
         var client = new HttpClient();
         var request = new HttpRequestMessage
-        {
-            Method = HttpMethod.Get,
-           // var Actorname = actorFullname.Replace(" ", "%20"),
-            RequestUri = new Uri("https://imdb8.p.rapidapi.com/auto-complete?q=" + actorFullname.Replace(" ", "%20")),
-            Headers =
             {
-                { "X-RapidAPI-Key", "ba3438375bmsh57a48239c20e4e8p1b25f8jsn1e7a731b663f" },
-                { "X-RapidAPI-Host", "imdb8.p.rapidapi.com" },
-            },
-        };
+                Method = HttpMethod.Get,
+                RequestUri = new Uri("https://online-movie-database.p.rapidapi.com/auto-complete?q=" + actorFullname.Replace(" ", "%20")),
+                Headers =
+    {
+        { "X-RapidAPI-Key", "82a2eb736bmsh70c276f3fe4fb12p1e0ce5jsn764a7ebdd411" },
+        { "X-RapidAPI-Host", "online-movie-database.p.rapidapi.com" },
+    },
+            };
         using (var response = await client.SendAsync(request))
         {
             if (response.IsSuccessStatusCode)
@@ -250,10 +250,10 @@
             }
         }
 
-      //  await GetDescription();
+        //  await GetDescription();
         FilmOnDisplay = false;
         searchedMovies = Service.GetMoviesFromActor(actorFullname);
-        
+
     }
 
     public void ActivateGetInfo(string movieTitle)
